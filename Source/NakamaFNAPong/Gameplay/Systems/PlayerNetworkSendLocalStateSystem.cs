@@ -1,13 +1,8 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-//Based on code from the FishGame Unity sample from Herioc Labs.
-//https://github.com/heroiclabs/fishgame-unity/blob/main/FishGame/Assets/Entities/Player/PlayerNetworkLocalSync.cs
-
-using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using NakamaFNAPong.Engine.IO;
 using NakamaFNAPong.Gameplay.Components;
-using NakamaFNAPong.Gameplay.Players;
 using NakamaFNAPong.NakamaMultiplayer;
 using System;
 using System.IO;
@@ -23,12 +18,12 @@ public sealed class PlayerNetworkSendLocalStateSystem : MoonTools.ECS.System
     readonly NetworkGameManager _networkGameManager;
 
     // How often to send the player's velocity and position across the network, in seconds.
-    const int UPDATES_PER_SECOND = 10;
+    public const int UPDATES_PER_SECOND = 10;
     readonly float StateFrequency = 1.0f / UPDATES_PER_SECOND;
     float _stateSyncTimer;
 
-    //Packet writer to writer all paddle state required each tick - 44 bytes currently
-    readonly PacketWriter _packetWriter = new(new MemoryStream(44));
+    //Packet writer to writer all paddle state required each tick
+    readonly PacketWriter _packetWriter = new(new MemoryStream(28));
 
     readonly Filter _filter;
 
@@ -54,7 +49,7 @@ public sealed class PlayerNetworkSendLocalStateSystem : MoonTools.ECS.System
             ref readonly var velocity = ref Get<VelocityComponent>(entity);
             ref readonly var playerActions = ref Get<PlayerActionsComponent>(entity);
 
-            // Send the players current velocity and position every StateFrequency seconds.
+            // Periodically send our state to everyone in the session.
             if (_stateSyncTimer <= 0)
             {
                 _packetWriter.Reset();

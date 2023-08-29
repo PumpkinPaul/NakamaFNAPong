@@ -1,15 +1,12 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
 using NakamaFNAPong.Engine;
 using NakamaFNAPong.Engine.Extensions;
-using NakamaFNAPong.Gameplay;
 using NakamaFNAPong.Gameplay.Renderers;
 using NakamaFNAPong.Gameplay.Systems;
-using System;
 using System.Collections.Generic;
 
 namespace NakamaFNAPong.NakamaMultiplayer;
@@ -33,7 +30,7 @@ public class ECSManager
 
     readonly Queue<LocalPlayerSpawnMessage> _localPlayerSpawnMessages = new();
     readonly Queue<RemotePlayerSpawnMessage> _remotePlayerSpawnMessages = new();
-    readonly Queue<MatchDataVelocityAndPositionMessage> _matchDataVelocityAndPositionMessage = new();
+    readonly Queue<ReceivedRemotePaddleStateMessage> _matchDataVelocityAndPositionMessage = new();
     readonly Queue<MatchDataDirectionAndPositionMessage> _matchDataDirectionAndPositionMessage = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
 
@@ -74,10 +71,22 @@ public class ECSManager
             //LateUpdate
             //...handle sending data to remote clients
             new GoalScoredLocalSyncSystem(_world, _networkGameManager, _gameState),
-            new PlayerNetworkSendLocalStateSystem(_world, _networkGameManager),
             new BallNetworkLocalSyncSystem(_world, _networkGameManager),
+
+            //Phase #1
+            //This is UpdateLocal gamer from Nakama.Tank
+            new PlayerNetworkSendLocalStateSystem(_world, _networkGameManager),
+
+            //Phase #2
             //...handle receiving data from remote clients
-            new PlayerNetworkRemoteSyncSystem(_world),
+            new PlayerNetworkRemoteResetSmoothingSystem(_world),  //Reset the smoothing factor
+            new PlayerNetworkRemoteSyncSystem(_world),            //Update the 'simulation' state
+            new PlayerNetworkRemoteApplyPredictionSystem(_world), //Apply client side predication to the 'simulation' state
+            
+            //Phase #3
+            new PlayerNetworkRemoteUpdateRemoteSystem(_world),
+            new PlayerNetworkRemoteApplySmoothingSystem(_world),
+            
             new BallNetworkRemoteSyncSystem(_world),
             new LerpPositionSystem(_world),
 
@@ -129,7 +138,7 @@ public class ECSManager
         ));
     }
 
-    public void ReceivedRemotePaddleState(Vector2 position, string sessionId)
+    public void ReceivedRemotePaddleState(ReceivedRemotePaddleStateEventArgs e, string sessionId)
     {
         var entity = _playerEntityMapper.GetEntityFromSessionId(sessionId);
 
@@ -137,9 +146,13 @@ public class ECSManager
             return;
 
         //Queue entity to begin lerping to the corrected position.
-        _matchDataVelocityAndPositionMessage.Enqueue(new MatchDataVelocityAndPositionMessage(
-            LerpToPosition: position,
-            Entity: entity
+        _matchDataVelocityAndPositionMessage.Enqueue(new ReceivedRemotePaddleStateMessage(
+            entity,
+            e.TotalSeconds,
+            e.Position,
+            e.Velocity,
+            e.MoveUp,
+            e.MoveDown
         ));
     }
 

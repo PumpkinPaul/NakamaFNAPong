@@ -37,6 +37,12 @@ class RollingAverage
     /// Constructs a new rolling average object that will track
     /// the specified number of sample values.
     /// </summary>
+    public RollingAverage() : this(120) { }
+
+    /// <summary>
+    /// Constructs a new rolling average object that will track
+    /// the specified number of sample values.
+    /// </summary>
     public RollingAverage(int sampleCount)
     {
         _sampleValues = new float[sampleCount];

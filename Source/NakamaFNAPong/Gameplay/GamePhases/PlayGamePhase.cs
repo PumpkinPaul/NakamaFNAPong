@@ -124,7 +124,7 @@ public class PlayGamePhase : GamePhase
 
     void OnReceivedRemotePaddleState(object sender, ReceivedRemotePaddleStateEventArgs e)
     {
-        _ecsManager.ReceivedRemotePaddleState(e.Position, e.SessionId);
+        _ecsManager.ReceivedRemotePaddleState(e, e.SessionId);
     }
 
     void OnReceivedRemoteBallState(object sender, ReceivedRemoteBallStateEventArgs e)

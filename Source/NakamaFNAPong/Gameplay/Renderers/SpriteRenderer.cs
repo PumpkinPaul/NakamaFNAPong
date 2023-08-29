@@ -35,9 +35,16 @@ public class SpriteRenderer : Renderer
             ref readonly var scale = ref Get<ScaleComponent>(entity);
             ref readonly var color = ref Get<ColorComponent>(entity);
 
+            var pos = position.Value;
+            if (Has<DisplayStateComponent>(entity))
+            {
+                ref readonly var displayState = ref Get<DisplayStateComponent>(entity);
+                pos = displayState.PaddleState.Position;
+            }
+
             var halfSize = scale.Value / 2;
             var bounds = new BoxF(-halfSize, scale.Value);
-            _spriteBatch.DrawFilledBox(position.Value, bounds, color.Value);
+            _spriteBatch.DrawFilledBox(pos, bounds, color.Value);
         }
     }
 }

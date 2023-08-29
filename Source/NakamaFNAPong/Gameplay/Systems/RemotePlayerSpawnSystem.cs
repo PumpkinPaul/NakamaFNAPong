@@ -43,6 +43,24 @@ public class RemotePlayerSpawnSystem : MoonTools.ECS.System
             Set(entity, new ColorComponent(message.Color));
             Set(entity, new VelocityComponent());
             Set(entity, new CausesBounceComponent(message.BounceDirection));
+
+            var paddleState = new PaddleState
+            {
+                Position = message.Position
+            };
+
+            Set(entity, new SimulationStateComponent
+            {
+                PaddleState = paddleState
+            });
+            Set(entity, new PreviousStateComponent
+            {
+                PaddleState = paddleState
+            });
+            Set(entity, new DisplayStateComponent
+            {
+                PaddleState = paddleState
+            });
         }
     }
 }

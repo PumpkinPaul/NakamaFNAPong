@@ -1,8 +1,5 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-//Based on code from the FishGame Unity sample from Herioc Labs.
-//https://github.com/heroiclabs/fishgame-unity/blob/main/FishGame/Assets/Entities/Player/PlayerNetworkLocalSync.cs
-
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using NakamaFNAPong.Gameplay.Components;

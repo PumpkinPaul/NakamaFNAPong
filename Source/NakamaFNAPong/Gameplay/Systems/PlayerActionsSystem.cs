@@ -8,10 +8,12 @@ using System;
 namespace NakamaFNAPong.Gameplay.Systems;
 
 /// <summary>
-/// Handles player actions (initiate a jump, fire a weapon)
+/// Handles player actions (initiate a jump, fire a weapon, move a paddle)
 /// </summary>
 public sealed class PlayerActionsSystem : MoonTools.ECS.System
 {
+    public const int PADDLE_SPEED = 5;
+
     readonly Filter _filter;
 
     public PlayerActionsSystem(World world) : base(world)
@@ -27,9 +29,7 @@ public sealed class PlayerActionsSystem : MoonTools.ECS.System
         {
             ref readonly var gameInput = ref Get<PlayerActionsComponent>(entity);
 
-            const int PADDLE_SPEED = 5;
-
-            var moveUpSpeed = gameInput.MoveUp   ?  PADDLE_SPEED : 0;
+            var moveUpSpeed   = gameInput.MoveUp   ?  PADDLE_SPEED : 0;
             var moveDownSpeed = gameInput.MoveDown ? -PADDLE_SPEED : 0;
 
             Set(entity, new VelocityComponent(

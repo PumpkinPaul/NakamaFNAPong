@@ -1,14 +1,9 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using NakamaFNAPong.Engine;
 using NakamaFNAPong.Engine.Extensions;
-using NakamaFNAPong.Gameplay.Renderers;
-using NakamaFNAPong.Gameplay;
-using System.Runtime.Intrinsics.Arm;
-using MoonTools.ECS;
 using NakamaFNAPong.NakamaMultiplayer;
 
 namespace NakamaFNAPong.Gameplay.GamePhases;

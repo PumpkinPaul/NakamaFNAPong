@@ -1,8 +1,5 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-//Based on code from the FishGame Unity sample from Herioc Labs.
-//https://github.com/heroiclabs/fishgame-unity/blob/main/FishGame/Assets/Entities/Player/PlayerNetworkLocalSync.cs
-
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using NakamaFNAPong.Gameplay.Components;
@@ -10,13 +7,17 @@ using System;
 
 namespace NakamaFNAPong.Gameplay.Systems;
 
-public readonly record struct MatchDataVelocityAndPositionMessage(
+public readonly record struct ReceivedRemotePaddleStateMessage(
     Entity Entity,
-    Vector2 LerpToPosition
+    float TotalSeconds,
+    Vector2 Position,
+    Vector2 Velocity,
+    bool MoveUp,
+    bool MoveDown
 );
 
 /// <summary>
-/// Reads remote match data received messages and tags each relevant entity with a lerping component to smooth the movement.
+/// Reads remote match data received messages and applies the new values to the 'simulation state' - e.g. the normal component data
 /// </summary>
 public sealed class PlayerNetworkRemoteSyncSystem : MoonTools.ECS.System
 {
@@ -26,15 +27,17 @@ public sealed class PlayerNetworkRemoteSyncSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<MatchDataVelocityAndPositionMessage>())
+        foreach (var message in ReadMessages<ReceivedRemotePaddleStateMessage>())
         {
-            ref readonly var position = ref Get<PositionComponent>(message.Entity);
+            ref var simulationState = ref GetMutable<SimulationStateComponent>(message.Entity);
 
-            Set(message.Entity, new LerpPositionComponent
-            {
-                ToPosition = message.LerpToPosition,
-                FromPosition = position.Value
-            });
+            // Read simulation state from the network packet.
+            simulationState.PaddleState.Position = message.Position;
+            simulationState.PaddleState.Velocity = message.Velocity;
+
+            // Read remote inputs from the network packet.
+            simulationState.PaddleState.MoveUp = message.MoveUp;
+            simulationState.PaddleState.MoveDown = message.MoveDown;
         }
     }
 }
