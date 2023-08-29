@@ -79,6 +79,8 @@ public abstract class BaseGame : Game
     // 0, 0
     protected override void Initialize()
     {
+        DebugSystem.Initialize(this, "SpriteFonts/Debug");
+
         ProjectionMatrix = Matrix.CreateOrthographicOffCenter(0, GraphicsDevice.Viewport.Width, 0, GraphicsDevice.Viewport.Height, 0, 1);
 
         TextMatrix = Matrix.Identity;
@@ -181,8 +183,15 @@ public abstract class BaseGame : Game
             OnDraw(gameTime);
 
             base.Draw(gameTime);
+
+            DebugSystem.Draw();
         }
     }
 
     protected virtual void OnDraw(GameTime gameTime) { }
+
+    protected override void OnExiting(object sender, EventArgs args)
+    {
+        DebugSystem.Exiting();
+    }
 }

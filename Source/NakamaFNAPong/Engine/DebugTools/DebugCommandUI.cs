@@ -396,7 +396,9 @@ public class DebugCommandUI : DrawableGameComponent, IDebugCommandHost
         {
             case State.Closed:
                 if (keyState.IsKeyDown(Keys.ChatPadGreen) && keyState.IsKeyUp(Keys.ChatPadOrange) && _prevKeyState[index].IsKeyDown(Keys.ChatPadOrange)
-                    || keyState.IsKeyUp(Keys.F12) && _prevKeyState[index].IsKeyDown(Keys.F12))
+                || keyState.IsKeyUp(Keys.OemTilde) && _prevKeyState[index].IsKeyDown(Keys.OemTilde)
+                || keyState.IsKeyUp(Keys.F1) && _prevKeyState[index].IsKeyDown(Keys.F1)
+                || keyState.IsKeyUp(Keys.F12) && _prevKeyState[index].IsKeyDown(Keys.F12))
 
                     Show();
 
@@ -426,7 +428,9 @@ public class DebugCommandUI : DrawableGameComponent, IDebugCommandHost
         var chatPadOrange = keyState.IsKeyDown(Keys.ChatPadOrange);
 
         if (keyState.IsKeyDown(Keys.ChatPadGreen) && keyState.IsKeyUp(Keys.ChatPadOrange) && _prevKeyState[index].IsKeyDown(Keys.ChatPadOrange)
-                || keyState.IsKeyUp(Keys.F12) && _prevKeyState[index].IsKeyDown(Keys.F12))
+        || keyState.IsKeyUp(Keys.OemTilde) && _prevKeyState[index].IsKeyDown(Keys.OemTilde)
+        || keyState.IsKeyUp(Keys.F1) && _prevKeyState[index].IsKeyDown(Keys.F1)
+        || keyState.IsKeyUp(Keys.F12) && _prevKeyState[index].IsKeyDown(Keys.F12))
         {
             Hide();
             return;
@@ -434,6 +438,9 @@ public class DebugCommandUI : DrawableGameComponent, IDebugCommandHost
 
         foreach (var key in keys)
         {
+            if (key == Keys.OemTilde)
+                continue;
+
             if (IsKeyPressed(index, key, dt) == false)
                 continue;
 

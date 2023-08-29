@@ -1,5 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
+using Microsoft.Xna.Framework;
 using NakamaFNAPong.Engine.Collections;
 using System;
 
@@ -42,7 +43,7 @@ public class GamePhaseManager
 
     public T Get<T>() where T : GamePhase => (T)_gamePhases[typeof(T)];
 
-    public void Update() => ActivePhase?.Update();
+    public void Update(GameTime gameTime) => ActivePhase?.Update(gameTime);
 
     public void Draw() => ActivePhase?.Draw();
 }

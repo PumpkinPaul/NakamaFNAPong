@@ -27,6 +27,6 @@ public abstract class UpdatePaddleStateSystem : MoonTools.ECS.System
         paddleState.Velocity = new Vector2(0, moveUpSpeed + moveDownSpeed);
         
         paddleState.Position += paddleState.Velocity;
-        //paddleState.Velocity += PlayerActionsSystem.PADDLE_FRICTION;
+        //paddleState.Velocity *= PlayerActionsSystem.PADDLE_FRICTION;
     }
 }

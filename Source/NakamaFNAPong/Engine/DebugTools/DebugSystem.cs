@@ -120,10 +120,12 @@ public static class DebugSystem
 
     public static void Draw()
     {
+        DebugResources.SpriteBatch.Begin();
         foreach (var action in _actions)
         {
             action.Invoke();
         }
+        DebugResources.SpriteBatch.End();
     }
 
     [Conditional("DEBUG_TOOLS")]

@@ -66,14 +66,14 @@ public class PlayGamePhase : GamePhase
         _networkGameManager.RemovedPlayer += OnRemovedPlayer;
     }
 
-    protected async override void OnUpdate()
+    protected async override void OnUpdate(GameTime gameTime)
     {
-        base.OnUpdate();
+        base.OnUpdate(gameTime);
 
         if (BaseGame.Instance.KeyboardState.IsKeyDown(Keys.Space) && BaseGame.Instance.PreviousKeyboardState.IsKeyUp(Keys.Space))
             await QuitMatch();
 
-        _ecsManager.Update();
+        _ecsManager.Update(gameTime);
     }
 
     protected override void OnDraw()

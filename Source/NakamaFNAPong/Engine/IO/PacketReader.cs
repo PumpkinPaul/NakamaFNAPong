@@ -8,23 +8,19 @@ namespace NakamaFNAPong.Engine.IO;
 
 public class PacketReader
 {
-    readonly Stream _stream;
+    Stream _stream;
 
-    readonly byte[] _buffer;
+    readonly byte[] _buffer = new byte[16];
 
-    public PacketReader(Stream stream)
+    public PacketReader()
     {
-        if (stream == null)
-            throw new ArgumentNullException(nameof(stream));
-
-        if (!stream.CanRead)
-            throw new ArgumentException("The stream is not readable");
-
-        _buffer = new byte[16];
-        _stream = stream;
     }
 
-    public void Reset() => _stream.Position = 0;
+    public void SetState(byte[] state)
+    {
+        //TODO: fix the allocation here
+        _stream = new MemoryStream(state);
+    }
 
     //
     // Summary:

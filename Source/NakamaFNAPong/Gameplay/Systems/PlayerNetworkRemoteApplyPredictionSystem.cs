@@ -1,5 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
+using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using NakamaFNAPong.Gameplay.Components;
 using NakamaFNAPong.NakamaMultiplayer;
@@ -13,20 +14,28 @@ namespace NakamaFNAPong.Gameplay.Systems;
 /// </summary>
 public sealed class PlayerNetworkRemoteApplyPredictionSystem : UpdatePaddleStateSystem
 {
-    public bool EnablePrediction { get; set; } = true;
+    readonly Timekeeper _timekeeper;
+    readonly NetworkOptions _networkOptions;
+    readonly TimeSpan _oneFrame;
 
     readonly Dictionary<Entity, RollingAverage> _clockDeltas = new();
 
-    public PlayerNetworkRemoteApplyPredictionSystem(World world) : base(world)
+    public PlayerNetworkRemoteApplyPredictionSystem(
+        World world,
+        Timekeeper timekeeper,
+        NetworkOptions networkOptions,
+        TimeSpan oneFrame
+        ) : base(world)
     {
+        _timekeeper = timekeeper;
+        _networkOptions = networkOptions;
+        _oneFrame = oneFrame;
     }
 
     public override void Update(TimeSpan delta)
     {
-        if (EnablePrediction == false)
+        if (_networkOptions.EnablePrediction == false)
             return;
-
-        var oneFrame = TimeSpan.FromSeconds(1.0 / 60.0);
 
         foreach (var message in ReadMessages<ReceivedRemotePaddleStateMessage>())
         {
@@ -42,7 +51,7 @@ public sealed class PlayerNetworkRemoteApplyPredictionSystem : UpdatePaddleState
 
             // Work out the difference between our current local time
             // and the remote time at which this packet was sent.
-            float localTime = (float)delta.TotalSeconds;
+            float localTime = (float)_timekeeper.GameTime.TotalGameTime.TotalSeconds;
 
             float timeDelta = localTime - message.TotalSeconds;
 
@@ -65,11 +74,11 @@ public sealed class PlayerNetworkRemoteApplyPredictionSystem : UpdatePaddleState
             // Apply prediction by updating our simulation state however
             // many times is necessary to catch up to the current time.
             ref var simulationState = ref GetMutable<SimulationStateComponent>(message.Entity);
-            while (latency >= oneFrame)
+            while (latency >= _oneFrame)
             {
                 UpdateState(message.Entity, ref simulationState.PaddleState);
 
-                latency -= oneFrame;
+                latency -= _oneFrame;
             }
         }
     }

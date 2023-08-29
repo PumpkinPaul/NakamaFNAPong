@@ -43,34 +43,4 @@ public static class MatchDataJson
 
         return Newtonsoft.Json.JsonConvert.SerializeObject(values);
     }
-
-    /// <summary>
-    /// Creates a network message containing player input.
-    /// </summary>
-    /// <returns>A JSONified string containing player input.</returns>
-    public static string Input(bool moveUp, bool moveDown)
-    {
-        var values = new Dictionary<string, string>
-        {
-            { "moveUp", moveUp.ToString() },
-            { "moveDown", moveDown.ToString() },
-        };
-
-        return values.ToJson();
-    }
-
-    /// <summary>
-    /// Creates a network message containing player scores.
-    /// </summary>
-    /// <returns>A JSONified string containing player scores.</returns>
-    public static string Score(int player1Score, int player2Score)
-    {
-        var values = new Dictionary<string, string>
-        {
-            { "player1.score", player1Score.ToString() },
-            { "player2.score", player2Score.ToString() },
-        };
-
-        return values.ToJson();
-    }
 }

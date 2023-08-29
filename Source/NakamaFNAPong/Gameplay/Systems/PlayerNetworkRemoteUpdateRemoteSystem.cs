@@ -3,6 +3,7 @@
 using MoonTools.ECS;
 using NakamaFNAPong.Engine;
 using NakamaFNAPong.Gameplay.Components;
+using NakamaFNAPong.NakamaMultiplayer;
 using System;
 
 namespace NakamaFNAPong.Gameplay.Systems;
@@ -13,12 +14,17 @@ namespace NakamaFNAPong.Gameplay.Systems;
 /// </summary>
 public sealed class PlayerNetworkRemoteUpdateRemoteSystem : UpdatePaddleStateSystem
 {
-    public bool EnablePrediction { get; set; } = true;
+    readonly NetworkOptions _networkOptions;
 
     readonly Filter _filter;
 
-    public PlayerNetworkRemoteUpdateRemoteSystem(World world) : base(world)
+    public PlayerNetworkRemoteUpdateRemoteSystem(
+        World world,
+        NetworkOptions networkOptions
+    ) : base(world)
     {
+        _networkOptions = networkOptions;
+
         _filter = FilterBuilder
             .Include<SmoothingComponent>()
             .Build();
@@ -42,7 +48,7 @@ public sealed class PlayerNetworkRemoteUpdateRemoteSystem : UpdatePaddleStateSys
             if (smoothing.Value < 0)
                 smoothing.Value = 0;
 
-            if (EnablePrediction)
+            if (_networkOptions.EnablePrediction)
             {
                 // Predict how the remote paddle will move by updating our local copy of its simultation state.
                 ref var simulationState = ref GetMutable<SimulationStateComponent>(entity);

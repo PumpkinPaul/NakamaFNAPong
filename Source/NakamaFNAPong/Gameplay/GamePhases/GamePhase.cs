@@ -1,5 +1,7 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
+using Microsoft.Xna.Framework;
+
 namespace NakamaFNAPong.Gameplay.GamePhases;
 
 /// <summary>
@@ -21,11 +23,11 @@ public abstract class GamePhase
 
     public virtual bool SupportsPause => false;
 
-    public void Update()
+    public void Update(GameTime gameTime)
     {
         ElapsedTicks++;
 
-        OnUpdate();
+        OnUpdate(gameTime);
     }
 
     public void Draw() => OnDraw();
@@ -33,7 +35,7 @@ public abstract class GamePhase
     public void Destroy() => OnDestroy();
 
     protected virtual void OnCreate() { }
-    protected virtual void OnUpdate() { }
+    protected virtual void OnUpdate(GameTime gameTime) { }
     protected virtual void OnDraw() { }
     protected virtual void OnDestroy() { }
 }

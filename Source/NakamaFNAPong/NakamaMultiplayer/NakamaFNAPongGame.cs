@@ -75,7 +75,7 @@ public class NakamaFNAPongGame : BaseGame
         if (KeyboardState.IsKeyDown(Keys.Escape) && PreviousKeyboardState.IsKeyUp(Keys.Escape))
             Exit();
 
-        GamePhaseManager.Update();
+        GamePhaseManager.Update(gameTime);
     }
 
     protected override void OnDraw(GameTime gameTime)

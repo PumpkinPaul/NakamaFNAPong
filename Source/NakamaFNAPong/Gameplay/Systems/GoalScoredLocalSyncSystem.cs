@@ -1,9 +1,11 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
+using NakamaFNAPong.Engine.IO;
 using NakamaFNAPong.Gameplay.Players;
 using NakamaFNAPong.NakamaMultiplayer;
 using System;
+using System.IO;
 
 namespace NakamaFNAPong.Gameplay.Systems;
 
@@ -19,6 +21,8 @@ public class GoalScoredLocalSyncSystem : MoonTools.ECS.System
 {
     readonly NetworkGameManager _networkGameManager;
     readonly MultiplayerGameState _gameState;
+
+    readonly PacketWriter _packetWriter = new(new MemoryStream(8));
 
     public GoalScoredLocalSyncSystem(
         World world,
@@ -49,8 +53,12 @@ public class GoalScoredLocalSyncSystem : MoonTools.ECS.System
             return;
 
         // Send a network packet containing the latest scores
+        _packetWriter.Reset();
+        _packetWriter.Write(_gameState.Player1Score);
+        _packetWriter.Write(_gameState.Player2Score);
+
         _networkGameManager.SendMatchState(
             OpCodes.SCORE_EVENT,
-            MatchDataJson.Score(_gameState.Player1Score, _gameState.Player2Score));
+            _packetWriter.GetBuffer());
     }
 }

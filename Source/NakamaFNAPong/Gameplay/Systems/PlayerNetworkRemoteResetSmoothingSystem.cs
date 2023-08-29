@@ -2,6 +2,7 @@
 
 using MoonTools.ECS;
 using NakamaFNAPong.Gameplay.Components;
+using NakamaFNAPong.NakamaMultiplayer;
 using System;
 
 namespace NakamaFNAPong.Gameplay.Systems;
@@ -11,17 +12,21 @@ namespace NakamaFNAPong.Gameplay.Systems;
 /// </summary>
 public sealed class PlayerNetworkRemoteResetSmoothingSystem : UpdatePaddleStateSystem
 {
-    public bool EnableSmoothing { get; set; } = true;
+    readonly NetworkOptions _networkOptions;
 
-    public PlayerNetworkRemoteResetSmoothingSystem(World world) : base(world)
+    public PlayerNetworkRemoteResetSmoothingSystem(
+        World world,
+        NetworkOptions networkOptions
+    ) : base(world)
     {
+        _networkOptions = networkOptions;
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<ReceivedRemotePaddleStateMessage>())
+        if (_networkOptions.EnableSmoothing)
         {
-            if (EnableSmoothing)
+            foreach (var message in ReadMessages<ReceivedRemotePaddleStateMessage>())
             {
                 // Start a new smoothing interpolation from our current state toward this new state we just received.
                 ref readonly var displayState = ref Get<DisplayStateComponent>(message.Entity);
@@ -33,10 +38,11 @@ public sealed class PlayerNetworkRemoteResetSmoothingSystem : UpdatePaddleStateS
 
                 Set(message.Entity, new SmoothingComponent(1));
             }
-            else
-            {
+        }
+        else
+        {
+            foreach (var message in ReadMessages<ReceivedRemotePaddleStateMessage>())
                 Set(message.Entity, new SmoothingComponent(0));
-            }
         }
     }
 }

@@ -67,6 +67,8 @@ public class NetworkGameManager
 
     public bool IsHost => (_hostPresence?.SessionId ?? "host") == (_localUserPresence?.SessionId ?? "user");
 
+    readonly PacketReader _packetReader = new();
+
     public NetworkGameManager(
         NakamaConnection nakamaConnection)
     {
@@ -254,15 +256,15 @@ public class NetworkGameManager
     private void UpdateRemotePaddleStateFromPacket(byte[] state, NetworkPlayer networkPlayer)
     {
         //TODO: fix the allocation here
-        var packetReader = new PacketReader(new MemoryStream(state));
+        _packetReader.SetState(state);
 
-        var totalSeconds = packetReader.ReadSingle();
+        var totalSeconds = _packetReader.ReadSingle();
 
-        var position = packetReader.ReadVector2();
-        var velocity = packetReader.ReadVector2();
+        var position = _packetReader.ReadVector2();
+        var velocity = _packetReader.ReadVector2();
 
-        var moveUp = packetReader.ReadBoolean();
-        var moveDown = packetReader.ReadBoolean();
+        var moveUp = _packetReader.ReadBoolean();
+        var moveDown = _packetReader.ReadBoolean();
 
         ReceivedRemotePaddleState?.Invoke(
             this,
@@ -281,11 +283,10 @@ public class NetworkGameManager
     /// <param name="state">The incoming state byte array.</param>
     private void UpdateDirectionAndPositionFromState(byte[] state)
     {
-        //TODO: fix the allocation here
-        var packetReader = new PacketReader(new MemoryStream(state));
+        _packetReader.SetState(state);
 
-        var direction = packetReader.ReadSingle();
-        var position = packetReader.ReadVector2();
+        var direction = _packetReader.ReadSingle();
+        var position = _packetReader.ReadVector2();
 
         ReceivedRemoteBallState?.Invoke(
             this,
@@ -298,11 +299,10 @@ public class NetworkGameManager
     /// <param name="state">The incoming state byte array.</param>
     private void UpdateScoreFromState(byte[] state)
     {
-        //TODO: fix the allocation here
-        var packetReader = new PacketReader(new MemoryStream(state));
+        _packetReader.SetState(state);
 
-        var player1Score = packetReader.ReadInt32();
-        var player2Score = packetReader.ReadInt32();
+        var player1Score = _packetReader.ReadInt32();
+        var player2Score = _packetReader.ReadInt32();
 
         ReceivedRemoteScore?.Invoke(
             this,

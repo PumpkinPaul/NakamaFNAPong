@@ -3,6 +3,7 @@
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using NakamaFNAPong.Gameplay.Components;
+using NakamaFNAPong.NakamaMultiplayer;
 using System;
 
 namespace NakamaFNAPong.Gameplay.Systems;
@@ -13,12 +14,17 @@ namespace NakamaFNAPong.Gameplay.Systems;
 /// </summary>
 public sealed class PlayerNetworkRemoteApplySmoothingSystem : UpdatePaddleStateSystem
 {
-    public bool EnableSmoothing { get; set; } = true;
+    readonly NetworkOptions _networkOptions;
 
     readonly Filter _filter;
 
-    public PlayerNetworkRemoteApplySmoothingSystem(World world) : base(world)
+    public PlayerNetworkRemoteApplySmoothingSystem(
+        World world,
+        NetworkOptions networkOptions
+    ) : base(world)
     {
+        _networkOptions = networkOptions;
+
         _filter = FilterBuilder
             .Include<SmoothingComponent>()
             .Include<SimulationStateComponent>()
@@ -29,6 +35,9 @@ public sealed class PlayerNetworkRemoteApplySmoothingSystem : UpdatePaddleStateS
 
     public override void Update(TimeSpan delta)
     {
+        if (_networkOptions.EnableSmoothing == false)
+            return;
+
         foreach (var entity in _filter.Entities)
         {
             ref readonly var smoothing = ref Get<SmoothingComponent>(entity);

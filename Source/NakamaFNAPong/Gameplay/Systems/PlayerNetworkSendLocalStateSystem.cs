@@ -1,5 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
+using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using NakamaFNAPong.Engine.IO;
 using NakamaFNAPong.Gameplay.Components;
@@ -16,6 +17,7 @@ namespace NakamaFNAPong.Gameplay.Systems;
 public sealed class PlayerNetworkSendLocalStateSystem : MoonTools.ECS.System
 {
     readonly NetworkGameManager _networkGameManager;
+    readonly Timekeeper _timekeeper;
 
     // How often to send the player's velocity and position across the network, in seconds.
     public const int UPDATES_PER_SECOND = 10;
@@ -29,10 +31,12 @@ public sealed class PlayerNetworkSendLocalStateSystem : MoonTools.ECS.System
 
     public PlayerNetworkSendLocalStateSystem(
         World world,
-        NetworkGameManager networkGameManager
+        NetworkGameManager networkGameManager,
+        Timekeeper timekeeper
     ) : base(world)
     {
         _networkGameManager = networkGameManager;
+        _timekeeper = timekeeper;
 
         _filter = FilterBuilder
             .Include<PositionComponent>()
@@ -53,7 +57,7 @@ public sealed class PlayerNetworkSendLocalStateSystem : MoonTools.ECS.System
             if (_stateSyncTimer <= 0)
             {
                 _packetWriter.Reset();
-                _packetWriter.Write((float)delta.TotalSeconds);
+                _packetWriter.Write((float)_timekeeper.GameTime.TotalGameTime.TotalSeconds);
 
                 // Send the current state of the paddle.
                 _packetWriter.Write(position.Value);

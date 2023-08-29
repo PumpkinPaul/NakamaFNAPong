@@ -36,9 +36,9 @@ public class MainMenuPhase : GamePhase
         _phase = Phase.Ready;
     }
 
-    protected async override void OnUpdate()
+    protected async override void OnUpdate(GameTime gameTime)
     {
-        base.OnUpdate();
+        base.OnUpdate(gameTime);
 
         if (BaseGame.Instance.KeyboardState.IsKeyDown(Keys.Space) && BaseGame.Instance.PreviousKeyboardState.IsKeyUp(Keys.Space))
         {

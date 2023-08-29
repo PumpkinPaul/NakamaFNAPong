@@ -5,6 +5,10 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //-----------------------------------------------------------------------------
 
+using Microsoft.Xna.Framework;
+using NakamaFNAPong.Engine;
+using NakamaFNAPong.Engine.DebugTools;
+
 namespace NakamaFNAPong.NakamaMultiplayer;
 
 /// <summary>
@@ -37,7 +41,7 @@ class RollingAverage
     /// Constructs a new rolling average object that will track
     /// the specified number of sample values.
     /// </summary>
-    public RollingAverage() : this(120) { }
+    public RollingAverage() : this(30) { }
 
     /// <summary>
     /// Constructs a new rolling average object that will track
@@ -46,6 +50,10 @@ class RollingAverage
     public RollingAverage(int sampleCount)
     {
         _sampleValues = new float[sampleCount];
+
+#if DEBUG_TOOLS || PROFILE
+        DebugSystem.RegisterDrawing(DebugDraw);
+#endif
     }
 
     /// <summary>
@@ -91,4 +99,12 @@ class RollingAverage
     /// Gets the current value of the rolling average.
     /// </summary>
     public float AverageValue => _sampleCount == 0 ? 0 : _valueSum / _sampleCount;
+
+    public void DebugDraw()
+    {
+        var y = BaseGame.Instance.Window.ClientBounds.Height - 60;
+        var x = 480;
+
+        DebugSystem.Plotter.DrawLines("Latency", _sampleValues, new Vector2(x, y), DebugSystem.MediumPlotSize, 0, FlatTheme.Carrot);
+    }
 }

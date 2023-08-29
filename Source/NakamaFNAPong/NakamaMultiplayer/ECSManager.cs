@@ -16,6 +16,8 @@ namespace NakamaFNAPong.NakamaMultiplayer;
 /// </summary>
 public class ECSManager
 {
+    readonly Timekeeper _timekeeper = new();
+
     readonly World _world;
 
     //Systems
@@ -39,11 +41,19 @@ public class ECSManager
         PlayerEntityMapper playerEntityMapper,
         MultiplayerGameState gameState)
     {
+        var game = BaseGame.Instance;
+
         _networkGameManager = networkGameManager;
         _playerEntityMapper = playerEntityMapper;
         _gameState = gameState;
 
         _world = new World();
+
+        var networkOptions = new NetworkOptions
+        {
+            EnablePrediction = false,
+            EnableSmoothing = true
+        };
 
         _systems = new MoonTools.ECS.System[]
         {
@@ -75,17 +85,17 @@ public class ECSManager
 
             //Phase #1
             //This is UpdateLocal gamer from Nakama.Tank
-            new PlayerNetworkSendLocalStateSystem(_world, _networkGameManager),
+            new PlayerNetworkSendLocalStateSystem(_world, _networkGameManager, _timekeeper),
 
             //Phase #2
             //...handle receiving data from remote clients
-            new PlayerNetworkRemoteResetSmoothingSystem(_world),  //Reset the smoothing factor
+            new PlayerNetworkRemoteResetSmoothingSystem(_world, networkOptions),  //Reset the smoothing factor
             new PlayerNetworkRemoteSyncSystem(_world),            //Update the 'simulation' state
-            new PlayerNetworkRemoteApplyPredictionSystem(_world), //Apply client side predication to the 'simulation' state
+            new PlayerNetworkRemoteApplyPredictionSystem(_world, _timekeeper, networkOptions, game.TargetElapsedTime), //Apply client side predication to the 'simulation' state
             
             //Phase #3
-            new PlayerNetworkRemoteUpdateRemoteSystem(_world),
-            new PlayerNetworkRemoteApplySmoothingSystem(_world),
+            new PlayerNetworkRemoteUpdateRemoteSystem(_world, networkOptions),
+            new PlayerNetworkRemoteApplySmoothingSystem(_world, networkOptions),
             
             new BallNetworkRemoteSyncSystem(_world),
             new LerpPositionSystem(_world),
@@ -179,8 +189,10 @@ public class ECSManager
         ));
     }
 
-    public void Update()
+    public void Update(GameTime gameTime)
     {
+        _timekeeper.GameTime = gameTime;
+
         SendAllQueuedMessages();
 
         foreach (var system in _systems)
