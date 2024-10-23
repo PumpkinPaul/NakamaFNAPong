@@ -1,7 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
-using NakamaFNAPong.Engine;
 using NakamaFNAPong.Gameplay.Components;
 using NakamaFNAPong.NakamaMultiplayer;
 using System;
@@ -32,44 +31,21 @@ public sealed class PlayerNetworkRemoteUpdateRemoteSystem : UpdatePaddleStateSys
 
     public override void Update(TimeSpan delta)
     {
+        if (_networkOptions.EnablePrediction == false)
+            return;
+
         foreach (var entity in _filter.Entities)
         {
-            // Update the smoothing amount, which interpolates from the previous
-            // state toward the current simultation state. The speed of this decay
-            // depends on the number of frames between packets: we want to finish
-            // our smoothing interpolation at the same time the next packet is due.
-            //float smoothingDecay = 1.0f / framesBetweenPackets;
-            float smoothingDecay = (float)BaseGame.Instance.TargetElapsedTime.TotalSeconds * PlayerNetworkSendLocalStateSystem.UPDATES_PER_SECOND;
+            // Predict how the remote paddle will move by updating our local copy of its simultation state.
+            ref var simulationState = ref GetMutable<SimulationStateComponent>(entity);
+            UpdateState(entity, ref simulationState.PaddleState);
 
-            ref var smoothing = ref GetMutable<SmoothingComponent>(entity);
-
-            smoothing.Value -= smoothingDecay;
-
-            if (smoothing.Value < 0)
-                smoothing.Value = 0;
-
-            if (_networkOptions.EnablePrediction)
+            // If both smoothing and prediction are active, also apply prediction to the previous state.
+            ref readonly var smoothing = ref Get<SmoothingComponent>(entity);
+            if (smoothing.Value > 0)
             {
-                // Predict how the remote paddle will move by updating our local copy of its simultation state.
-                ref var simulationState = ref GetMutable<SimulationStateComponent>(entity);
-                UpdateState(entity, ref simulationState.PaddleState);
-
-                // If both smoothing and prediction are active, also apply prediction to the previous state.
-                if (smoothing.Value > 0)
-                {
-                    ref var previousState = ref GetMutable<PreviousStateComponent>(entity);
-                    UpdateState(entity, ref previousState.PaddleState);
-                        
-                }
-            }
-
-            if (smoothing.Value == 0)
-            {
-                ref var simulationState = ref GetMutable<SimulationStateComponent>(entity);
-                Set(entity, new DisplayStateComponent
-                {
-                    PaddleState = simulationState.PaddleState
-                });
+                ref var previousState = ref GetMutable<PreviousStateComponent>(entity);
+                UpdateState(entity, ref previousState.PaddleState);
             }
         }
     }

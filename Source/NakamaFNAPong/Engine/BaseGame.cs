@@ -45,6 +45,12 @@ public abstract class BaseGame : Game
 
     protected Effect EntityShader;
 
+    public bool IsPressed(Keys key, Buttons button)
+    {
+        return (KeyboardState.IsKeyDown(key) && PreviousKeyboardState.IsKeyUp(key))
+            || (GamePadState.IsButtonDown(button) && PreviousGamePadState.IsButtonUp(button));
+    }
+
     protected BaseGame()
     {
         Instance = this;

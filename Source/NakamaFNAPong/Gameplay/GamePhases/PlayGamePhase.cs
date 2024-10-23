@@ -73,6 +73,14 @@ public class PlayGamePhase : GamePhase
         if (BaseGame.Instance.KeyboardState.IsKeyDown(Keys.Space) && BaseGame.Instance.PreviousKeyboardState.IsKeyUp(Keys.Space))
             await QuitMatch();
 
+        // Toggle prediction on or off?
+        if (BaseGame.Instance.IsPressed(Keys.X, Buttons.X))
+            _ecsManager.TogglePrediction();
+
+        // Toggle smoothing on or off?
+        if (BaseGame.Instance.IsPressed(Keys.Z, Buttons.Y))
+            _ecsManager.ToggleSmoothing();
+
         _ecsManager.Update(gameTime);
     }
 

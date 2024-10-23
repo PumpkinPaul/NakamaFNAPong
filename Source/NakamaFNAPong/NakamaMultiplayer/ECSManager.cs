@@ -17,7 +17,7 @@ namespace NakamaFNAPong.NakamaMultiplayer;
 public class ECSManager
 {
     readonly Timekeeper _timekeeper = new();
-
+    readonly NetworkOptions _networkOptions;
     readonly World _world;
 
     //Systems
@@ -49,7 +49,7 @@ public class ECSManager
 
         _world = new World();
 
-        var networkOptions = new NetworkOptions
+        _networkOptions = new NetworkOptions
         {
             EnablePrediction = false,
             EnableSmoothing = true
@@ -89,13 +89,14 @@ public class ECSManager
 
             //Phase #2
             //...handle receiving data from remote clients
-            new PlayerNetworkRemoteResetSmoothingSystem(_world, networkOptions),  //Reset the smoothing factor
+            new PlayerNetworkRemoteResetSmoothingSystem(_world, _networkOptions),  //Reset the smoothing factor
             new PlayerNetworkRemoteSyncSystem(_world),            //Update the 'simulation' state
-            new PlayerNetworkRemoteApplyPredictionSystem(_world, _timekeeper, networkOptions, game.TargetElapsedTime), //Apply client side predication to the 'simulation' state
+            new PlayerNetworkRemoteApplyPredictionSystem(_world, _timekeeper, _networkOptions, game.TargetElapsedTime), //Apply client side predication to the 'simulation' state
             
             //Phase #3
-            new PlayerNetworkRemoteUpdateRemoteSystem(_world, networkOptions),
-            new PlayerNetworkRemoteApplySmoothingSystem(_world, networkOptions),
+            new PlayerNetworkRemoteUpdateSmoothingSystem(_world),
+            new PlayerNetworkRemoteUpdateRemoteSystem(_world, _networkOptions),
+            new PlayerNetworkRemoteApplySmoothingSystem(_world, _networkOptions),
             
             new BallNetworkRemoteSyncSystem(_world),
             new LerpPositionSystem(_world),
@@ -216,6 +217,16 @@ public class ECSManager
             _world.Send(messages.Dequeue());
     }
 
+    public void TogglePrediction()
+    {
+        _networkOptions.EnablePrediction = !_networkOptions.EnablePrediction;
+    }
+
+    public void ToggleSmoothing()
+    {
+        _networkOptions.EnableSmoothing = !_networkOptions.EnableSmoothing;
+    }
+
     public void Draw()
     {
         var spriteBatch = BaseGame.Instance.SpriteBatch;
@@ -234,6 +245,9 @@ public class ECSManager
         spriteBatch.DrawText(Resources.GameFont, _gameState.Player1Score.ToString(), new Vector2(BaseGame.SCREEN_WIDTH * 0.25f, BaseGame.SCREEN_HEIGHT - 48), Color.Cyan, Alignment.Centre);
         spriteBatch.DrawText(Resources.GameFont, _gameState.Player2Score.ToString(), new Vector2(BaseGame.SCREEN_WIDTH * 0.75f, BaseGame.SCREEN_HEIGHT - 48), Color.Cyan, Alignment.Centre);
 
+        //...help text
+        spriteBatch.DrawText(Resources.SmallFont, "Z Smoothing",  new Vector2(BaseGame.SCREEN_WIDTH * 0.25f, BaseGame.SCREEN_HEIGHT - 92), _networkOptions.EnableSmoothing  ? Color.Cyan : Color.Gray, Alignment.Centre);
+        spriteBatch.DrawText(Resources.SmallFont, "X Prediction", new Vector2(BaseGame.SCREEN_WIDTH * 0.75f, BaseGame.SCREEN_HEIGHT - 92), _networkOptions.EnablePrediction ? Color.Cyan : Color.Gray, Alignment.Centre);
         spriteBatch.End();
     }
 }
